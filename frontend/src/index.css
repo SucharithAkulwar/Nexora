@@ -1,0 +1,277 @@
+@import "bootstrap/dist/css/bootstrap.min.css";
+
+:root {
+  /* Wix Doctor (Modern) Template Exact Color Palette */
+  --nexora-primary: #00329A;          /* Wix Cobalt Royal Blue rgb(0,50,154) */
+  --nexora-primary-hover: #002573;
+  --nexora-primary-light: #EEF4FF;    /* Soft Tint */
+  --nexora-primary-subtle: #E0EBFF;
+  
+  --nexora-secondary: #0043A8;
+  --nexora-accent: #2563EB;
+  
+  --nexora-bg-body: #F8FAFC;          /* Clean Medical Off-White */
+  --nexora-bg-surface: #FFFFFF;       /* Crisp Pure White */
+  --nexora-bg-subtle: #F1F5F9;        /* Soft Slate Tint */
+  --nexora-bg-card: #FFFFFF;
+  
+  --nexora-text-main: #0F172A;        /* High Contrast Charcoal */
+  --nexora-text-muted: #475569;       /* Professional Slate */
+  --nexora-text-faint: #64748B;
+  
+  --nexora-border: #E2E8F0;
+  --nexora-border-focus: #00329A;
+  
+  --nexora-success: #15803D;
+  --nexora-success-bg: #DCFCE7;
+  
+  --nexora-warning: #B45309;
+  --nexora-warning-bg: #FEF3C7;
+  
+  --nexora-danger: #B91C1C;
+  --nexora-danger-bg: #FEE2E2;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  background-color: var(--nexora-bg-body);
+  color: var(--nexora-text-main);
+  font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  min-height: 100vh;
+  line-height: 1.6;
+}
+
+/* Prestigious Editorial Typography */
+h1, h2, h3, h4, .brand-editorial {
+  font-family: 'Playfair Display', Georgia, serif;
+  color: var(--nexora-text-main);
+  letter-spacing: -0.015em;
+  font-weight: 600;
+}
+
+h5, h6, .brand-font, .ui-font {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  letter-spacing: -0.01em;
+}
+
+/* Professional Medical Cards */
+.medical-card {
+  background: var(--nexora-bg-surface);
+  border: 1px solid var(--nexora-border);
+  border-radius: 12px;
+  box-shadow: 0 2px 12px rgba(0, 50, 154, 0.04);
+  transition: all 0.2s ease-in-out;
+}
+
+.medical-card:hover {
+  border-color: #CBD5E1;
+  box-shadow: 0 8px 24px rgba(0, 50, 154, 0.08);
+}
+
+.medical-card-interactive {
+  cursor: pointer;
+}
+
+.medical-card-interactive:hover {
+  transform: translateY(-2px);
+  border-color: var(--nexora-primary);
+  box-shadow: 0 10px 28px rgba(0, 50, 154, 0.12);
+}
+
+/* Buttons */
+.btn-primary-medical {
+  background-color: var(--nexora-primary);
+  color: #FFFFFF;
+  font-weight: 600;
+  border: 1px solid var(--nexora-primary);
+  border-radius: 8px;
+  padding: 10px 22px;
+  box-shadow: 0 2px 8px rgba(0, 50, 154, 0.18);
+  transition: all 0.15s ease-in-out;
+}
+
+.btn-primary-medical:hover, .btn-primary-medical:focus {
+  background-color: var(--nexora-primary-hover);
+  color: #FFFFFF;
+  box-shadow: 0 4px 14px rgba(0, 50, 154, 0.28);
+}
+
+.btn-outline-medical {
+  background: #FFFFFF;
+  color: var(--nexora-primary);
+  border: 1px solid #CBD5E1;
+  font-weight: 600;
+  border-radius: 8px;
+  padding: 9px 20px;
+  transition: all 0.15s ease-in-out;
+}
+
+.btn-outline-medical:hover {
+  background: var(--nexora-primary-light);
+  border-color: var(--nexora-primary);
+  color: var(--nexora-primary);
+}
+
+.btn-soft-medical {
+  background: var(--nexora-primary-light);
+  color: var(--nexora-primary);
+  border: 1px solid transparent;
+  font-weight: 600;
+  border-radius: 8px;
+  transition: all 0.15s;
+}
+
+.btn-soft-medical:hover {
+  background: var(--nexora-primary-subtle);
+  color: var(--nexora-primary-hover);
+}
+
+/* Subtle Badges */
+.badge-medical-blue {
+  background: var(--nexora-primary-light);
+  color: var(--nexora-primary);
+  border: 1px solid var(--nexora-primary-subtle);
+  font-weight: 600;
+  border-radius: 6px;
+}
+
+.badge-medical-green {
+  background: var(--nexora-success-bg);
+  color: var(--nexora-success);
+  border: 1px solid #BBF7D0;
+  font-weight: 600;
+  border-radius: 6px;
+}
+
+.badge-medical-amber {
+  background: var(--nexora-warning-bg);
+  color: var(--nexora-warning);
+  border: 1px solid #FDE68A;
+  font-weight: 600;
+  border-radius: 6px;
+}
+
+.badge-medical-red {
+  background: var(--nexora-danger-bg);
+  color: var(--nexora-danger);
+  border: 1px solid #FECACA;
+  font-weight: 600;
+  border-radius: 6px;
+}
+
+/* Urgent Medical Notice Banner */
+.urgent-banner-light {
+  background: #FFF1F2;
+  border: 1px solid #FECDD3;
+  border-left: 5px solid #E11D48;
+  border-radius: 10px;
+  padding: 14px 18px;
+}
+
+/* Form Controls */
+.form-control-medical, .form-select-medical {
+  background-color: #FFFFFF;
+  border: 1px solid #CBD5E1;
+  color: var(--nexora-text-main);
+  border-radius: 8px;
+  padding: 10px 14px;
+  font-size: 14px;
+  transition: all 0.15s;
+}
+
+.form-control-medical:focus, .form-select-medical:focus {
+  background-color: #FFFFFF;
+  border-color: var(--nexora-primary);
+  box-shadow: 0 0 0 3px rgba(0, 50, 154, 0.12);
+  color: #0F172A;
+}
+
+.form-control-medical::placeholder {
+  color: #94A3B8;
+}
+
+/* Navbar */
+.medical-navbar {
+  background: #FFFFFF;
+  border-bottom: 1px solid #E2E8F0;
+  box-shadow: 0 1px 6px rgba(0, 0, 0, 0.03);
+}
+
+.nav-link-medical {
+  color: #334155;
+  font-weight: 500;
+  font-size: 14px;
+  padding: 8px 14px;
+  border-radius: 6px;
+  text-decoration: none;
+  transition: all 0.15s;
+}
+
+.nav-link-medical:hover, .nav-link-medical.active {
+  color: var(--nexora-primary);
+  background: var(--nexora-primary-light);
+}
+
+/* Leaflet Map */
+.leaflet-container {
+  height: 100%;
+  width: 100%;
+  border-radius: 12px;
+  z-index: 10;
+}
+
+.leaflet-popup-content-wrapper {
+  background: #FFFFFF;
+  color: #0F172A;
+  border: 1px solid #E2E8F0;
+  border-radius: 10px;
+  box-shadow: 0 8px 24px rgba(0, 50, 154, 0.12);
+}
+
+.leaflet-popup-tip {
+  background: #FFFFFF;
+}
+
+/* Soft Indicator */
+.pulse-indicator-medical {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--nexora-primary);
+  box-shadow: 0 0 0 0 rgba(0, 50, 154, 0.5);
+  animation: pulse-med 2s infinite;
+}
+
+@keyframes pulse-med {
+  0% {
+    transform: scale(0.95);
+    box-shadow: 0 0 0 0 rgba(0, 50, 154, 0.5);
+  }
+  70% {
+    transform: scale(1);
+    box-shadow: 0 0 0 6px rgba(0, 50, 154, 0);
+  }
+  100% {
+    transform: scale(0.95);
+    box-shadow: 0 0 0 0 rgba(0, 50, 154, 0);
+  }
+}
+
+/* Clean Scrollbar */
+::-webkit-scrollbar {
+  width: 7px;
+  height: 7px;
+}
+::-webkit-scrollbar-track {
+  background: #F1F5F9;
+}
+::-webkit-scrollbar-thumb {
+  background: #CBD5E1;
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #94A3B8;
+}
