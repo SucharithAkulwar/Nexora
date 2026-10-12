@@ -33,9 +33,9 @@ export const HospitalMap: React.FC<HospitalMapProps> = ({
     if (!mapInstanceRef.current) {
       const map = L.map(mapContainerRef.current).setView([16.705, 74.2433], 13);
 
-      // CartoDB Voyager tiles for clear, crisp, modern map presentation
-      L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
-        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
+      // OpenStreetMap tiles for clean, crisp, keyless presentation
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
         maxZoom: 19,
       }).addTo(map);
 
