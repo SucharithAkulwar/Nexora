@@ -142,8 +142,15 @@ export const LandingPage: React.FC<LandingPageProps> = ({
       {/* ──────────────────────────────────────────────────────────────────────────
           HERO SECTION: Bold, Minimalistic & Impactful
           ────────────────────────────────────────────────────────────────────────── */}
-      <section className="container pt-5 pb-5">
-        <div className="row align-items-center gy-5">
+      <section
+        className="container d-flex align-items-center"
+        style={{
+          minHeight: 'calc(100vh - 75px)',
+          paddingTop: '2rem',
+          paddingBottom: '3.5rem',
+        }}
+      >
+        <div className="row align-items-center gy-5 w-100">
           {/* Left Column: Bold Headline, Subtitle, Actions, Avatar Stack */}
           <div className="col-lg-6 text-start">
 
@@ -179,7 +186,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                 alt="Nexora Healthcare Platform — Online Doctor Consultation & Hospital Booking"
                 className="img-fluid"
                 style={{
-                  maxHeight: 520,
+                  maxHeight: 480,
                   width: '100%',
                   maxWidth: 580,
                   objectFit: 'contain',
@@ -198,16 +205,16 @@ export const LandingPage: React.FC<LandingPageProps> = ({
       {/* ──────────────────────────────────────────────────────────────────────────
           STATS RIBBON: Bold & Minimalist 4-Column Bar
           ────────────────────────────────────────────────────────────────────────── */}
-      <section className="vivian-stats-bar">
+      <section className="vivian-stats-bar" style={{ marginTop: '2rem' }}>
         <div className="container">
-          <div className="row g-4 text-center">
+          <div className="row g-4 text-center align-items-center">
 
             <div className="col-6 col-md-3 border-end" style={{ borderColor: '#E5E7EB' }}>
               <div className="vivian-stat-number">3x</div>
               <div className="vivian-stat-label">Faster Doctor Intake</div>
             </div>
 
-            <div className="col-6 col-md-3 border-end-md" style={{ borderColor: '#E5E7EB' }}>
+            <div className="col-6 col-md-3 border-md-end" style={{ borderColor: '#E5E7EB' }}>
               <div className="vivian-stat-number" style={{ color: '#D97706' }}>₹2,500</div>
               <div className="vivian-stat-label">Annual Care Credits</div>
             </div>
