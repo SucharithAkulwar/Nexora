@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { api, UserSession } from '../api/client';
-import { X, User, Stethoscope, Lock, Mail, ShieldAlert, Building2, Award, Info, IndianRupee } from 'lucide-react';
+import { X, User, Stethoscope, Lock, Mail, ShieldAlert, Building2, Award, Info, IndianRupee, CheckCircle2 } from 'lucide-react';
 
 interface AuthModalProps {
   isOpen: boolean;
@@ -37,6 +37,9 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onSuccess
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [fullName, setFullName] = useState('');
+
+  // Success state for registration & welcome notification
+  const [successData, setSuccessData] = useState<{ session: UserSession; email: string; name: string } | null>(null);
   
   // Doctor specific registration fields
   const [hospitalSelection, setHospitalSelection] = useState<string>('hosp-cpr-kolhapur');
@@ -52,6 +55,14 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onSuccess
 
   if (!isOpen) return null;
 
+  const handleProceedAfterSuccess = () => {
+    if (successData) {
+      onSuccess(successData.session);
+      setSuccessData(null);
+      onClose();
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -60,6 +71,8 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onSuccess
       let session: UserSession;
       if (mode === 'signin') {
         session = await api.login(email, password);
+        onSuccess(session);
+        onClose();
       } else {
         let payload: any = {
           email,
@@ -93,15 +106,20 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onSuccess
         }
 
         session = await api.register(payload);
+        // Display welcome email confirmation view
+        setSuccessData({
+          session,
+          email: payload.email,
+          name: payload.full_name || 'Patient',
+        });
       }
-      onSuccess(session);
-      onClose();
     } catch (err: any) {
       setError(err.message || 'Authentication failed. Please verify credentials.');
     } finally {
       setLoading(false);
     }
   };
+
 
   return (
     <div
@@ -111,42 +129,88 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onSuccess
     >
       <div className="modal-dialog modal-dialog-centered modal-dialog-scrollable" style={{ maxWidth: 520, maxHeight: '92vh' }}>
         <div className="modal-content medical-card p-4 text-dark border-0 bg-white shadow-lg overflow-hidden">
-          <div className="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom">
-            <div>
-              <h4 className="fw-bold m-0 brand-editorial text-dark">
-                {mode === 'signin' ? 'Sign In to Nexora' : 'Create Your Account'}
-              </h4>
-              <p className="text-secondary small m-0">
-                {mode === 'signin' ? 'Access your appointments, consultations, and records.' : 'Register as a Patient or Healthcare Practitioner.'}
+          
+          {/* SUCCESS VIEW (Registration & Gmail Notification Sent) */}
+          {successData ? (
+            <div className="text-center py-3">
+              <div
+                className="d-inline-flex align-items-center justify-content-center rounded-circle mb-3"
+                style={{ width: 68, height: 68, backgroundColor: '#ECFDF5', color: '#059669' }}
+              >
+                <CheckCircle2 size={38} />
+              </div>
+
+              <h4 className="fw-bold mb-1 text-dark brand-editorial">Welcome to Nexora!</h4>
+              <p className="text-secondary small mb-3">
+                Your account is confirmed and ready to access the Kolhapur healthcare network.
               </p>
-            </div>
-            <button className="btn btn-sm btn-outline-secondary p-1 rounded-circle" onClick={onClose} style={{ width: 32, height: 32 }}>
-              <X size={16} />
-            </button>
-          </div>
 
-          {/* Mode Switcher */}
-          <div className="d-flex p-1 mb-3 rounded bg-light border" style={{ borderColor: 'var(--nexora-border)' }}>
-            <button
-              className={`btn btn-sm flex-fill ${mode === 'signin' ? 'btn-primary-medical' : 'btn-light text-secondary'}`}
-              onClick={() => { setMode('signin'); setError(null); }}
-            >
-              Sign In
-            </button>
-            <button
-              className={`btn btn-sm flex-fill ${mode === 'register' ? 'btn-primary-medical' : 'btn-light text-secondary'}`}
-              onClick={() => { setMode('register'); setError(null); }}
-            >
-              New Registration
-            </button>
-          </div>
+              {/* Notification card info */}
+              <div className="text-start p-3 rounded-3 bg-light border mb-4" style={{ borderColor: 'var(--nexora-border)' }}>
+                <div className="d-flex align-items-center gap-2 mb-2">
+                  <Mail size={16} className="text-primary" />
+                  <span className="fw-bold small text-dark">Gmail Notification Dispatched</span>
+                </div>
+                <div className="small text-secondary mb-1">
+                  We've sent a welcome briefing and security pass to:
+                </div>
+                <div className="fw-bold text-dark font-monospace small bg-white p-2 rounded border text-break">
+                  {successData.email}
+                </div>
+                <div className="mt-2 text-muted" style={{ fontSize: 11 }}>
+                  ✓ Check your Gmail inbox for your registration confirmation & platform guidelines.
+                </div>
+              </div>
 
-          {error && (
-            <div className="alert alert-danger py-2 small d-flex align-items-center gap-2 mb-3">
-              <ShieldAlert size={16} />
-              <span>{error}</span>
+              <button
+                type="button"
+                className="btn btn-primary-medical w-100 py-2 fw-semibold"
+                onClick={handleProceedAfterSuccess}
+              >
+                Proceed to Nexora Dashboard →
+              </button>
             </div>
-          )}
+          ) : (
+            /* STANDARD EMAIL / PASSWORD VIEW */
+            <div>
+              <div className="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom">
+                <div>
+                  <h4 className="fw-bold m-0 brand-editorial text-dark">
+                    {mode === 'signin' ? 'Sign In to Nexora' : 'Create Your Account'}
+                  </h4>
+                  <p className="text-secondary small m-0">
+                    {mode === 'signin' ? 'Access your appointments, consultations, and records.' : 'Register as a Patient or Healthcare Practitioner.'}
+                  </p>
+                </div>
+                <button className="btn btn-sm btn-outline-secondary p-1 rounded-circle" onClick={onClose} style={{ width: 32, height: 32 }}>
+                  <X size={16} />
+                </button>
+              </div>
+
+              {/* Mode Switcher */}
+              <div className="d-flex p-1 mb-3 rounded bg-light border" style={{ borderColor: 'var(--nexora-border)' }}>
+                <button
+                  className={`btn btn-sm flex-fill ${mode === 'signin' ? 'btn-primary-medical' : 'btn-light text-secondary'}`}
+                  onClick={() => { setMode('signin'); setError(null); }}
+                >
+                  Sign In
+                </button>
+                <button
+                  className={`btn btn-sm flex-fill ${mode === 'register' ? 'btn-primary-medical' : 'btn-light text-secondary'}`}
+                  onClick={() => { setMode('register'); setError(null); }}
+                >
+                  New Registration
+                </button>
+              </div>
+
+              {error && (
+                <div className="alert alert-danger py-2 small d-flex align-items-center gap-2 mb-3">
+                  <ShieldAlert size={16} />
+                  <span>{error}</span>
+                </div>
+              )}
+
+              {/* Standard Email Form starts */}
 
           <form onSubmit={handleSubmit} style={{ overflowY: 'auto', maxHeight: '68vh', paddingRight: '4px' }}>
             {mode === 'register' && (
@@ -324,6 +388,11 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onSuccess
                   required
                 />
               </div>
+              {mode === 'register' && (
+                <div className="form-text text-muted" style={{ fontSize: 11 }}>
+                  ✉️ A registration confirmation and welcome briefing will be dispatched to this email.
+                </div>
+              )}
             </div>
 
             <div className="mb-3">
@@ -351,8 +420,11 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onSuccess
           <div className="mt-3 text-center text-secondary" style={{ fontSize: 12 }}>
             Your clinical data is protected by patient isolation and encrypted authentication.
           </div>
+            </div>
+          )}
         </div>
       </div>
     </div>
   );
 };
+

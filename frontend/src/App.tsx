@@ -16,7 +16,18 @@ import { api, getStoredSession, setStoredSession, UserSession } from './api/clie
 
 export const App: React.FC = () => {
   const [session, setSession] = useState<UserSession | null>(getStoredSession);
-  const [currentTab, setCurrentTab] = useState<string>('landing');
+  const [currentTab, setCurrentTab] = useState<string>(() => {
+    const stored = getStoredSession();
+    return stored?.role === 'doctor' ? 'doctor-dashboard' : 'landing';
+  });
+
+  useEffect(() => {
+    if (session?.role === 'doctor') {
+      if (currentTab === 'landing' || currentTab === 'hospitals' || currentTab === 'patient-dashboard' || currentTab === 'records' || currentTab === 'onboarding') {
+        setCurrentTab('doctor-dashboard');
+      }
+    }
+  }, [session, currentTab]);
 
   // Modals & Active Selections
   const [showAuthModal, setShowAuthModal] = useState<boolean>(false);
@@ -34,6 +45,7 @@ export const App: React.FC = () => {
     setStoredSession(null);
     setCurrentTab('landing');
   };
+
 
   const handleOpenBooking = (hospital: any, doctor?: any) => {
     // If doctor not explicitly passed, find first participating doctor
@@ -54,8 +66,12 @@ export const App: React.FC = () => {
       <Navbar
         currentTab={currentTab}
         onNavigate={(tab) => {
-          setCurrentTab(tab);
-          if (tab !== 'doctor-consultation') setActiveConsultationId(null);
+          let target = tab;
+          if (session?.role === 'doctor' && (target === 'landing' || target === 'hospitals')) {
+            target = 'doctor-dashboard';
+          }
+          setCurrentTab(target);
+          if (target !== 'doctor-consultation') setActiveConsultationId(null);
         }}
         session={session}
         onLogout={handleLogout}
@@ -64,14 +80,14 @@ export const App: React.FC = () => {
 
       {/* Main Screen Views */}
       <main className="flex-grow-1">
-        {currentTab === 'landing' && (
+        {currentTab === 'landing' && session?.role !== 'doctor' && (
           <LandingPage
             onExploreHospitals={() => setCurrentTab('hospitals')}
             onOpenAuth={() => setShowAuthModal(true)}
           />
         )}
 
-        {currentTab === 'hospitals' && (
+        {currentTab === 'hospitals' && session?.role !== 'doctor' && (
           <HospitalDiscoveryView
             onSelectHospitalForBooking={(hospital, doctor) => handleOpenBooking(hospital, doctor)}
             onViewHospitalDetail={(hospId) => setDetailHospitalId(hospId)}
@@ -127,6 +143,7 @@ export const App: React.FC = () => {
           else setCurrentTab('patient-dashboard');
         }}
       />
+
 
       <HospitalDetailModal
         hospitalId={detailHospitalId}

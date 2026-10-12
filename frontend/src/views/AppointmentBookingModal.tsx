@@ -225,9 +225,6 @@ export const AppointmentBookingModal: React.FC<AppointmentBookingModalProps> = (
                 <span className="badge badge-medical-blue">
                   Step {step} of 2 &bull; {step === 1 ? 'Slot Selection' : 'Pre-Appointment Clinical Intake'}
                 </span>
-                <span className="badge bg-light text-secondary border">
-                  Kolhapur Region
-                </span>
               </div>
               <h4 className="fw-bold brand-editorial text-dark m-0">
                 Consultation with {doctor.full_name}
@@ -311,14 +308,6 @@ export const AppointmentBookingModal: React.FC<AppointmentBookingModalProps> = (
                       }
                     )}
                   </div>
-                </div>
-
-                <div
-                  className="p-3 rounded bg-light border mb-3 text-start small text-secondary"
-                  style={{ borderColor: 'var(--nexora-border)' }}
-                >
-                  <strong className="text-dark">Anti-Double-Booking Guarantee:</strong> Nexora atomically locks
-                  your appointment slot in Asia/Kolkata timezone to prevent concurrent reservations.
                 </div>
               </div>
             ) : (

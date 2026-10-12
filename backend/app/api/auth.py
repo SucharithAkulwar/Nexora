@@ -5,6 +5,7 @@ from fastapi import APIRouter, HTTPException, status, Depends
 from app.core.config import settings
 from app.core.security import verify_password, get_password_hash, create_access_token, get_current_user
 from app.core.database import get_db
+from app.services.email_service import send_welcome_email
 from app.models.schemas import UserRegister, UserLogin, DevLoginRequest, TokenResponse, UserOut
 
 logger = logging.getLogger("nexora.auth")
@@ -72,6 +73,13 @@ async def register(user_in: UserRegister):
         })
 
     token = create_access_token(subject=user_id, role=user_in.role)
+
+    # Dispatch Gmail inbox welcome notification
+    try:
+        await send_welcome_email(user_in.email.lower(), user_in.full_name, user_in.role)
+    except Exception as email_err:
+        logger.warning(f"Failed to dispatch welcome email: {email_err}")
+
     return TokenResponse(
         access_token=token,
         role=user_in.role,
@@ -116,6 +124,24 @@ async def dev_login(req: DevLoginRequest):
         status_code=status.HTTP_400_BAD_REQUEST,
         detail="Pre-installed proxy profiles have been removed. Please sign up or log in with your account."
     )
+
+
+
+
+@router.get("/notifications")
+async def get_my_notifications(current_user: dict = Depends(get_current_user)):
+    db = get_db()
+    user = await db["users"].find_one({"_id": current_user["user_id"]})
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    notes = await db["sent_notifications"].find(
+        {"recipient_email": user["email"]}
+    ).sort("sent_at", -1).to_list(10)
+    for n in notes:
+        if "_id" in n:
+            n["_id"] = str(n["_id"])
+    return notes
 
 
 

@@ -5,14 +5,12 @@ import {
   Search,
   MapPin,
   Star,
-  Info,
   Calendar,
   Layers,
   List,
   Map as MapIcon,
   ShieldCheck,
   Building2,
-  ExternalLink,
 } from 'lucide-react';
 
 interface HospitalDiscoveryViewProps {
@@ -108,22 +106,6 @@ export const HospitalDiscoveryView: React.FC<HospitalDiscoveryViewProps> = ({
               <MapIcon size={14} className="me-1" /> Map Only
             </button>
           </div>
-        </div>
-
-        {/* Discovery Source & Policy Attribution Notice */}
-        <div
-          className="p-3 rounded bg-white border d-flex align-items-center justify-content-between flex-wrap gap-2"
-          style={{ borderColor: 'var(--nexora-border)' }}
-        >
-          <div className="d-flex align-items-center gap-2">
-            <Info size={18} style={{ color: 'var(--nexora-primary)' }} />
-            <span className="small text-dark">
-              <strong>Source:</strong> {discoveryMeta?.is_live_google ? 'Google Maps Platform Places API (New)' : 'Verified Kolhapur Healthcare Facility Catalog (Offline Mode)'}
-            </span>
-          </div>
-          <span className="text-muted" style={{ fontSize: 12 }}>
-            {discoveryMeta?.notice}
-          </span>
         </div>
       </div>
 
@@ -241,16 +223,14 @@ export const HospitalDiscoveryView: React.FC<HospitalDiscoveryViewProps> = ({
                             </span>
                           )}
 
-                          {hosp.has_nexora_doctors ? (
-                            <span className="badge badge-medical-green d-flex align-items-center gap-1">
-                              <ShieldCheck size={12} />
-                              <span>{hosp.bookable_doctors_count} Participating Doctor(s)</span>
+                          <span className="badge badge-medical-green d-flex align-items-center gap-1">
+                            <ShieldCheck size={12} />
+                            <span>
+                              {hosp.has_nexora_doctors
+                                ? `${hosp.bookable_doctors_count} Participating Doctor(s)`
+                                : 'OPD Consultation Available'}
                             </span>
-                          ) : (
-                            <span className="badge bg-light text-secondary border">
-                              Facility Directory
-                            </span>
-                          )}
+                          </span>
                         </div>
 
                         <div className="d-flex gap-2">
@@ -264,28 +244,16 @@ export const HospitalDiscoveryView: React.FC<HospitalDiscoveryViewProps> = ({
                             Details & Reviews
                           </button>
 
-                          {hosp.has_nexora_doctors ? (
-                            <button
-                              className="btn btn-sm btn-primary-medical"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                onSelectHospitalForBooking(hosp);
-                              }}
-                            >
-                              <Calendar size={13} className="me-1" />
-                              Book Consultation
-                            </button>
-                          ) : (
-                            <a
-                              href={hosp.website || `tel:${hosp.phone_number}`}
-                              className="btn btn-sm btn-outline-medical"
-                              target="_blank"
-                              rel="noreferrer"
-                              onClick={(e) => e.stopPropagation()}
-                            >
-                              <ExternalLink size={12} className="me-1" /> Contact
-                            </a>
-                          )}
+                          <button
+                            className="btn btn-sm btn-primary-medical"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              onSelectHospitalForBooking(hosp);
+                            }}
+                          >
+                            <Calendar size={13} className="me-1" />
+                            Book Consultation
+                          </button>
                         </div>
                       </div>
                     </div>

@@ -24,48 +24,51 @@ export const Navbar: React.FC<NavbarProps> = ({
           {/* Brand Logo */}
           <button
             className="btn btn-link p-0 text-decoration-none d-flex align-items-center gap-2 border-0"
-            onClick={() => onNavigate('landing')}
+            onClick={() => onNavigate(session?.role === 'doctor' ? 'doctor-dashboard' : 'landing')}
           >
             <div
               style={{
                 width: 38,
                 height: 38,
-                borderRadius: 8,
-                background: '#00329A',
+                borderRadius: 10,
+                background: '#0A0F1D',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                color: '#FFFFFF',
+                color: '#FBBF24',
+                boxShadow: '0 4px 12px rgba(10, 15, 29, 0.15)',
               }}
             >
-              <Activity size={22} strokeWidth={2.5} />
+              <Activity size={22} strokeWidth={2.8} />
             </div>
             <div className="text-start">
-              <span className="brand-editorial fw-bold fs-4 text-dark" style={{ letterSpacing: '0.02em', color: '#00329A' }}>
+              <span className="fw-bold fs-4 text-dark" style={{ fontFamily: 'Outfit, sans-serif', letterSpacing: '-0.035em' }}>
                 NEXORA
-              </span>
-              <span className="d-none d-md-block text-secondary" style={{ fontSize: 11, marginTop: -4 }}>
-                Healthcare Platform &bull; Kolhapur
               </span>
             </div>
           </button>
 
           {/* Navigation Links */}
           <nav className="d-none d-lg-flex align-items-center gap-1">
-            <button
-              className={`nav-link-medical btn btn-sm border-0 ${currentTab === 'landing' ? 'active' : ''}`}
-              onClick={() => onNavigate('landing')}
-            >
-              Home
-            </button>
+            {/* Consumer / Patient Links (Hidden for Doctors) */}
+            {session?.role !== 'doctor' && (
+              <>
+                <button
+                  className={`nav-link-medical btn btn-sm border-0 ${currentTab === 'landing' ? 'active' : ''}`}
+                  onClick={() => onNavigate('landing')}
+                >
+                  Home
+                </button>
 
-            <button
-              className={`nav-link-medical btn btn-sm border-0 ${currentTab === 'hospitals' ? 'active' : ''}`}
-              onClick={() => onNavigate('hospitals')}
-            >
-              <MapPin size={15} className="me-1" style={{ color: 'var(--nexora-primary)' }} />
-              Kolhapur Hospitals
-            </button>
+                <button
+                  className={`nav-link-medical btn btn-sm border-0 ${currentTab === 'hospitals' ? 'active' : ''}`}
+                  onClick={() => onNavigate('hospitals')}
+                >
+                  <MapPin size={15} className="me-1" style={{ color: 'var(--nexora-primary)' }} />
+                  Kolhapur Hospitals
+                </button>
+              </>
+            )}
 
             {/* Role specific links */}
             {session?.role === 'patient' && (
@@ -144,8 +147,12 @@ export const Navbar: React.FC<NavbarProps> = ({
                 </button>
               </div>
             ) : (
-              <button className="btn btn-sm btn-primary-medical px-3" onClick={onOpenAuthModal}>
-                Sign In / Register
+              <button
+                className="vivian-btn-primary px-3 py-2"
+                style={{ fontSize: 13 }}
+                onClick={onOpenAuthModal}
+              >
+                <span>Sign In / Register</span>
               </button>
             )}
           </div>

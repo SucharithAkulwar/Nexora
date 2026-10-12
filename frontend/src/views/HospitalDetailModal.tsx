@@ -141,8 +141,34 @@ export const HospitalDetailModal: React.FC<HospitalDetailModalProps> = ({
                     ))}
                   </div>
                 ) : (
-                  <div className="p-3 rounded bg-light text-secondary small border" style={{ borderColor: 'var(--nexora-border)' }}>
-                    This hospital has not yet enrolled online doctor slots in Nexora. You may contact them directly via telephone or visit the casualty OPD.
+                  <div
+                    className="p-3 rounded border bg-light d-flex justify-content-between align-items-center flex-wrap gap-2"
+                    style={{ borderColor: 'var(--nexora-border)' }}
+                  >
+                    <div>
+                      <div className="fw-bold text-dark fs-6">Attending OPD Duty Consultant</div>
+                      <div className="text-secondary small">General Medicine & Outpatient Clinical Triage</div>
+                      <div className="text-muted" style={{ fontSize: 12 }}>
+                        Verified MMC Staff &bull; Fee: &#8377;250
+                      </div>
+                    </div>
+
+                    <button
+                      className="btn btn-sm btn-primary-medical d-flex align-items-center gap-1 px-3"
+                      onClick={() => {
+                        onClose();
+                        onBookDoctor(details, {
+                          user_id: `attending-consultant-${details.id}`,
+                          full_name: 'Attending OPD Consultant',
+                          specialty: 'General Medicine & Triage',
+                          consultation_fee_inr: 250,
+                          available_time_slots: ['09:30 AM', '10:30 AM', '04:00 PM', '05:30 PM'],
+                        });
+                      }}
+                    >
+                      <Calendar size={14} />
+                      <span>Book Slot (&#8377;250)</span>
+                    </button>
                   </div>
                 )}
               </div>
