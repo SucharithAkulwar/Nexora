@@ -82,7 +82,7 @@ const LOCALITY_PREVIEWS: Record<string, HospitalPreview> = {
   },
   'Shahupuri': {
     name: 'Kolhapur Institute of Orthopaedics & Trauma',
-    locality: 'Shahupuri, Kolhapur',
+    locality: 'Shahupur, Kolhapur',
     rating: 4.7,
     reviewsCount: 512,
     type: 'Super-Specialty Orthopaedics',
