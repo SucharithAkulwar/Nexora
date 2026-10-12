@@ -31,18 +31,25 @@ export const Navbar: React.FC<NavbarProps> = ({
                 width: 38,
                 height: 38,
                 borderRadius: 10,
-                background: '#0A0F1D',
+                background: '#2563EB',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                color: '#FBBF24',
-                boxShadow: '0 4px 12px rgba(10, 15, 29, 0.15)',
+                color: '#FFFFFF',
+                boxShadow: '0 4px 14px rgba(37, 99, 235, 0.28)',
               }}
             >
               <Activity size={22} strokeWidth={2.8} />
             </div>
             <div className="text-start">
-              <span className="fw-bold fs-4 text-dark" style={{ fontFamily: 'Outfit, sans-serif', letterSpacing: '-0.035em' }}>
+              <span
+                className="fw-bold fs-4"
+                style={{
+                  fontFamily: 'Outfit, sans-serif',
+                  letterSpacing: '-0.035em',
+                  color: '#2563EB',
+                }}
+              >
                 NEXORA
               </span>
             </div>
@@ -148,8 +155,23 @@ export const Navbar: React.FC<NavbarProps> = ({
               </div>
             ) : (
               <button
-                className="vivian-btn-primary px-3 py-2"
-                style={{ fontSize: 13 }}
+                className="px-3 py-2 fw-semibold text-white d-flex align-items-center gap-2 border-0"
+                style={{
+                  fontSize: 13,
+                  backgroundColor: '#2563EB',
+                  borderRadius: 9999,
+                  boxShadow: '0 4px 14px rgba(37, 99, 235, 0.28)',
+                  transition: 'all 0.2s ease',
+                  cursor: 'pointer',
+                }}
+                onMouseEnter={(e) => {
+                  (e.currentTarget as HTMLElement).style.backgroundColor = '#1D4ED8';
+                  (e.currentTarget as HTMLElement).style.boxShadow = '0 6px 18px rgba(37, 99, 235, 0.38)';
+                }}
+                onMouseLeave={(e) => {
+                  (e.currentTarget as HTMLElement).style.backgroundColor = '#2563EB';
+                  (e.currentTarget as HTMLElement).style.boxShadow = '0 4px 14px rgba(37, 99, 235, 0.28)';
+                }}
                 onClick={onOpenAuthModal}
               >
                 <span>Sign In / Register</span>

@@ -982,16 +982,16 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                     width: 32,
                     height: 32,
                     borderRadius: 8,
-                    background: '#0A0F1D',
+                    background: '#2563EB',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    color: '#FBBF24',
+                    color: '#FFFFFF',
                   }}
                 >
                   <Activity size={18} strokeWidth={2.8} />
                 </div>
-                <span className="fw-bold text-dark fs-5" style={{ fontFamily: 'Outfit, sans-serif' }}>
+                <span className="fw-bold fs-5" style={{ fontFamily: 'Outfit, sans-serif', color: '#2563EB' }}>
                   NEXORA
                 </span>
               </div>
