@@ -42,11 +42,14 @@ export const DoctorDashboardView: React.FC<DoctorDashboardViewProps> = ({
         api.getMyDoctorProfile().catch(() => null),
         api.getMyPatients().catch(() => []),
       ]);
+      console.log(
+        `[DoctorWorkstation] Hydrated queue for doctor: "${profData?.full_name}" (user_id: ${profData?.user_id}) at ${profData?.hospital_name}. Total appointments linked: ${apptsData.length}.`
+      );
       setAppointments(apptsData);
       setProfile(profData);
       setPatients(patientsData);
     } catch (err) {
-      console.error(err);
+      console.error('[DoctorWorkstation] Error loading dashboard data:', err);
     } finally {
       setLoading(false);
     }
@@ -58,6 +61,7 @@ export const DoctorDashboardView: React.FC<DoctorDashboardViewProps> = ({
         api.getMyDoctorAppointments().catch(() => []),
         api.getMyPatients().catch(() => []),
       ]);
+      console.log(`[DoctorWorkstation] Refreshed queue. Active appointments: ${apptsData.length}`);
       setAppointments(apptsData);
       setPatients(patientsData);
     } catch (err) {
@@ -67,10 +71,15 @@ export const DoctorDashboardView: React.FC<DoctorDashboardViewProps> = ({
 
   const handleStatusChange = async (apptId: string, newStatus: string) => {
     try {
+      // Optimistic instant state update
+      setAppointments((prev) =>
+        prev.map((a) => (a._id === apptId || a.id === apptId ? { ...a, status: newStatus } : a))
+      );
       await api.updateAppointmentStatus(apptId, newStatus);
-      loadAppointments();
-    } catch (err) {
-      alert('Could not update appointment status.');
+      await loadAppointments();
+    } catch (err: any) {
+      alert(err?.message || 'Could not update appointment status.');
+      await loadAppointments();
     }
   };
 

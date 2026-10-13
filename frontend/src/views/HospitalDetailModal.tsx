@@ -158,7 +158,7 @@ export const HospitalDetailModal: React.FC<HospitalDetailModalProps> = ({
                       onClick={() => {
                         onClose();
                         onBookDoctor(details, {
-                          user_id: `attending-consultant-${details.id}`,
+                          user_id: 'attending-consultant',
                           full_name: 'Attending OPD Consultant',
                           specialty: 'General Medicine & Triage',
                           consultation_fee_inr: 250,

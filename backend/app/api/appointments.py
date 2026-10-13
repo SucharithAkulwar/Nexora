@@ -27,44 +27,30 @@ async def book_appointment(
     db = get_db()
     patient_user_id = current_user["user_id"]
 
-    # 1. Verify doctor exists or auto-provision hospital attending consultant
+    # 1. Verify doctor exists and is registered in doctor_profiles
     doctor_profile = await db["doctor_profiles"].find_one({
-        "$or": [{"_id": booking.doctor_id}, {"user_id": booking.doctor_id}]
+        "$or": [{"user_id": booking.doctor_id}, {"_id": booking.doctor_id}],
+        "hospital_id": booking.hospital_id
     })
+    
+    # If not matched directly to this hospital, search by user_id/_id across profiles
     if not doctor_profile:
-        # Auto-provision attending OPD consultant for this hospital
-        doc_user_id = booking.doctor_id or f"doc-opd-{booking.hospital_id}"
-        doctor_profile = {
-            "_id": f"profile-{doc_user_id}",
-            "user_id": doc_user_id,
-            "full_name": booking.doctor_name or "Attending OPD Consultant",
-            "specialty": "General OPD & Internal Medicine",
-            "experience_years": 8,
-            "qualifications": "MBBS, MD (Medicine)",
-            "hospital_id": booking.hospital_id,
-            "hospital_name": booking.hospital_name,
-            "locality": "Kolhapur",
-            "consultation_fee_inr": 250,
-            "available_days": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"],
-            "available_time_slots": ["09:30 AM", "10:30 AM", "04:00 PM", "05:30 PM"],
-            "rating": 4.8,
-            "review_count": 8
-        }
-        await db["doctor_profiles"].insert_one(doctor_profile)
-        # Also ensure user record exists
-        existing_doc_user = await db["users"].find_one({"_id": doc_user_id})
-        if not existing_doc_user:
-            await db["users"].insert_one({
-                "_id": doc_user_id,
-                "email": f"{doc_user_id}@nexora-hospital.org",
-                "full_name": doctor_profile["full_name"],
-                "role": "doctor",
-                "hashed_password": "",
-                "created_at": datetime.now(timezone.utc).isoformat(),
-                "is_active": True
-            })
+        doctor_profile = await db["doctor_profiles"].find_one({
+            "$or": [{"user_id": booking.doctor_id}, {"_id": booking.doctor_id}]
+        })
 
-    doctor_user_id = doctor_profile.get("user_id")
+    # If booking specifies attending consultant, fall back to registered duty consultant
+    if not doctor_profile and (booking.doctor_id == "attending-consultant" or "attending" in booking.doctor_id.lower()):
+        doctor_profile = await db["doctor_profiles"].find_one({"user_id": "attending-consultant"})
+
+    if not doctor_profile:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="The selected doctor is not registered in the Nexora physician directory. Please choose an active registered doctor."
+        )
+
+    doctor_user_id = doctor_profile.get("user_id") or doctor_profile.get("_id")
+    consultation_fee = doctor_profile.get("consultation_fee_inr", 250)
 
     # 2. Prevent Double Booking: Check if slot on specified date is already booked
     conflict = await db["appointments"].find_one({
@@ -96,7 +82,7 @@ async def book_appointment(
     appointment_id = f"appt-{uuid.uuid4().hex[:10]}"
     now_iso = datetime.now(timezone.utc).isoformat()
 
-    # 5. Insert Appointment atomically
+    # 5. Insert Appointment atomically with linked foreign keys
     appointment_doc = {
         "_id": appointment_id,
         "patient_id": patient_user_id,
@@ -104,9 +90,10 @@ async def book_appointment(
         "doctor_id": doctor_user_id,
         "doctor_name": doctor_profile.get("full_name"),
         "hospital_id": booking.hospital_id,
-        "hospital_name": booking.hospital_name,
+        "hospital_name": booking.hospital_name or doctor_profile.get("hospital_name", "Hospital"),
         "appointment_date": booking.appointment_date,
         "appointment_time": booking.appointment_time,
+        "consultation_fee_inr": consultation_fee,
         "status": "Confirmed",
         "created_at": now_iso
     }
@@ -264,11 +251,16 @@ async def update_appointment_status(
     # Patient can only cancel
     if role == "patient":
         if user_id != appt["patient_id"]:
-            raise HTTPException(status_code=403, detail="Forbidden")
+            raise HTTPException(status_code=403, detail="Forbidden: You can only cancel your own appointments.")
         if status_update.status != "Cancelled":
             raise HTTPException(status_code=400, detail="Patients may only cancel their appointment.")
     elif role == "doctor":
-        if user_id != appt["doctor_id"]:
+        is_assigned = (
+            user_id == appt.get("doctor_id") or
+            f"profile-{user_id}" == appt.get("doctor_id") or
+            (appt.get("doctor_id") == "attending-consultant" and role == "doctor")
+        )
+        if not is_assigned:
             raise HTTPException(status_code=403, detail="Forbidden: You are not the assigned physician.")
 
     await db["appointments"].update_one(
@@ -277,3 +269,16 @@ async def update_appointment_status(
     )
 
     return {"success": True, "status": status_update.status}
+
+
+@router.post("/{appointment_id}/cancel")
+async def cancel_appointment(
+    appointment_id: str,
+    current_user: dict = Depends(get_current_user)
+):
+    """Direct cancellation endpoint for patients and attending physicians."""
+    return await update_appointment_status(
+        appointment_id=appointment_id,
+        status_update=AppointmentStatusUpdate(status="Cancelled"),
+        current_user=current_user
+    )

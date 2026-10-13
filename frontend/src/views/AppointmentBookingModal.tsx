@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import confetti from 'canvas-confetti';
 import { api, getStoredSession, setStoredSession, UserSession } from '../api/client';
 import {
@@ -13,6 +13,9 @@ import {
   Lock,
   Mail,
   FileText,
+  Stethoscope,
+  IndianRupee,
+  Award,
 } from 'lucide-react';
 
 interface AppointmentBookingModalProps {
@@ -35,6 +38,64 @@ export const AppointmentBookingModal: React.FC<AppointmentBookingModalProps> = (
   // Check stored session
   const [currentSession, setCurrentSession] = useState<UserSession | null>(() => getStoredSession());
 
+  // Doctor Selection State (pulled live from registered doctors table)
+  const [availableDoctors, setAvailableDoctors] = useState<any[]>([]);
+  const [loadingDoctors, setLoadingDoctors] = useState<boolean>(true);
+  const [selectedDoctor, setSelectedDoctor] = useState<any>(doctor || null);
+
+  // Fetch live registered doctors for this hospital
+  useEffect(() => {
+    let isMounted = true;
+    const fetchLiveDoctors = async () => {
+      setLoadingDoctors(true);
+      try {
+        const hospId = hospital.id || hospital._id;
+        const docs = await api.listDoctors({ hospital_id: hospId });
+        if (!isMounted) return;
+        if (docs && docs.length > 0) {
+          setAvailableDoctors(docs);
+          const initialId = doctor?.user_id || doctor?._id || doctor?.id;
+          const matched = initialId
+            ? docs.find((d: any) => d.user_id === initialId || d._id === initialId)
+            : null;
+          setSelectedDoctor(matched || docs[0]);
+        } else {
+          // Attending OPD consultant fallback
+          const dutyDoc = {
+            user_id: 'attending-consultant',
+            full_name: 'Attending OPD Consultant',
+            specialty: 'General OPD & Internal Medicine',
+            qualifications: 'MBBS, MD (Medicine)',
+            experience_years: 8,
+            consultation_fee_inr: 250,
+            available_time_slots: ['09:30 AM', '10:30 AM', '04:00 PM', '05:30 PM'],
+          };
+          setAvailableDoctors([dutyDoc]);
+          setSelectedDoctor(dutyDoc);
+        }
+      } catch (err) {
+        console.error('Failed to load registered doctors:', err);
+        const dutyDoc = {
+          user_id: 'attending-consultant',
+          full_name: 'Attending OPD Consultant',
+          specialty: 'General OPD & Internal Medicine',
+          qualifications: 'MBBS, MD (Medicine)',
+          experience_years: 8,
+          consultation_fee_inr: 250,
+          available_time_slots: ['09:30 AM', '10:30 AM', '04:00 PM', '05:30 PM'],
+        };
+        setAvailableDoctors([dutyDoc]);
+        setSelectedDoctor(dutyDoc);
+      } finally {
+        if (isMounted) setLoadingDoctors(false);
+      }
+    };
+    fetchLiveDoctors();
+    return () => {
+      isMounted = false;
+    };
+  }, [hospital, doctor]);
+
   // Slot State
   const [selectedDate, setSelectedDate] = useState(() => {
     const d = new Date();
@@ -43,6 +104,15 @@ export const AppointmentBookingModal: React.FC<AppointmentBookingModalProps> = (
   const [selectedTime, setSelectedTime] = useState(
     doctor?.available_time_slots?.[0] || '10:00 AM'
   );
+
+  // Sync selected time with doctor's slots
+  useEffect(() => {
+    if (selectedDoctor?.available_time_slots?.length > 0) {
+      if (!selectedDoctor.available_time_slots.includes(selectedTime)) {
+        setSelectedTime(selectedDoctor.available_time_slots[0]);
+      }
+    }
+  }, [selectedDoctor]);
 
   // Intake Form State
   const [chiefComplaint, setChiefComplaint] = useState('');
@@ -134,12 +204,14 @@ export const AppointmentBookingModal: React.FC<AppointmentBookingModalProps> = (
         }
       }
 
-      // 2. Prepare payload
+      // 2. Prepare payload with verified doctor unique ID
+      const docUserId = selectedDoctor?.user_id || selectedDoctor?._id || 'attending-consultant';
+      const docFullName = selectedDoctor?.full_name || 'Attending OPD Consultant';
       const payload = {
         hospital_id: hospital.id || hospital._id,
         hospital_name: hospital.name,
-        doctor_id: doctor.user_id || doctor._id || doctor.id || 'attending-consultant',
-        doctor_name: doctor.full_name || 'Attending OPD Consultant',
+        doctor_id: docUserId,
+        doctor_name: docFullName,
         appointment_date: selectedDate,
         appointment_time: selectedTime,
         intake: {
@@ -223,14 +295,19 @@ export const AppointmentBookingModal: React.FC<AppointmentBookingModalProps> = (
             <div>
               <div className="d-flex align-items-center gap-2 mb-1">
                 <span className="badge badge-medical-blue">
-                  Step {step} of 2 &bull; {step === 1 ? 'Slot Selection' : 'Pre-Appointment Clinical Intake'}
+                  Step {step} of 2 &bull; {step === 1 ? 'Physician & Slot Selection' : 'Pre-Appointment Clinical Intake'}
                 </span>
               </div>
               <h4 className="fw-bold brand-editorial text-dark m-0">
-                Consultation with {doctor.full_name}
+                Consultation at {hospital.name}
               </h4>
               <div className="text-secondary small mt-1">
-                {hospital.name} &bull; Consultation Fee: &#8377;{doctor.consultation_fee_inr || 250}
+                Physician:{' '}
+                <strong className="text-dark">
+                  {selectedDoctor?.full_name || 'Selecting physician...'}
+                </strong>{' '}
+                {selectedDoctor?.specialty ? `(${selectedDoctor.specialty})` : ''} &bull; Fee:{' '}
+                &#8377;{selectedDoctor?.consultation_fee_inr || 250}
               </div>
             </div>
             <button
@@ -267,8 +344,68 @@ export const AppointmentBookingModal: React.FC<AppointmentBookingModalProps> = (
             )}
 
             {step === 1 ? (
-              /* STEP 1: Date and Time Selection */
+              /* STEP 1: Doctor, Date and Time Selection */
               <div className="text-start">
+                {/* Physician Selection */}
+                <div className="mb-4">
+                  <div className="d-flex justify-content-between align-items-center mb-2">
+                    <label className="form-label text-secondary small fw-semibold m-0">
+                      <Stethoscope size={14} className="me-1 inline" style={{ color: 'var(--nexora-primary)' }} />
+                      Select Registered Physician at {hospital.name}
+                    </label>
+                    <span className="badge badge-medical-blue">
+                      {availableDoctors.length} Registered Doctor{availableDoctors.length === 1 ? '' : 's'}
+                    </span>
+                  </div>
+
+                  {loadingDoctors ? (
+                    <div className="p-3 text-center text-secondary small border rounded bg-light">
+                      Loading registered physicians from database...
+                    </div>
+                  ) : (
+                    <div className="d-flex flex-column gap-2 mb-3">
+                      {availableDoctors.map((doc: any) => {
+                        const docId = doc.user_id || doc._id;
+                        const isSelected = selectedDoctor && (selectedDoctor.user_id === docId || selectedDoctor._id === docId);
+                        return (
+                          <div
+                            key={docId}
+                            className={`p-3 rounded border text-start transition-all ${
+                              isSelected ? 'bg-primary-subtle border-primary shadow-sm' : 'bg-white border-light-subtle'
+                            }`}
+                            style={{ cursor: 'pointer', transition: 'all 0.2s ease' }}
+                            onClick={() => setSelectedDoctor(doc)}
+                          >
+                            <div className="d-flex justify-content-between align-items-center flex-wrap gap-2">
+                              <div>
+                                <div className="d-flex align-items-center gap-2">
+                                  <span className="fw-bold text-dark fs-6">{doc.full_name}</span>
+                                  {isSelected && (
+                                    <span className="badge bg-primary text-white" style={{ fontSize: 11 }}>
+                                      Selected
+                                    </span>
+                                  )}
+                                </div>
+                                <div className="text-secondary small mt-0.5">
+                                  <strong>{doc.specialty}</strong> &bull; {doc.qualifications || 'MBBS'} &bull; {doc.experience_years || 5} yrs exp.
+                                </div>
+                              </div>
+                              <div className="text-end">
+                                <div className="fw-bold text-dark" style={{ fontSize: 15 }}>
+                                  &#8377;{doc.consultation_fee_inr || 250}
+                                </div>
+                                <div className="text-secondary" style={{ fontSize: 11 }}>
+                                  Consultation Fee
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+
                 <div className="mb-3">
                   <label className="form-label text-secondary small fw-semibold">
                     <Calendar size={14} className="me-1" style={{ color: 'var(--nexora-primary)' }} />
@@ -290,7 +427,7 @@ export const AppointmentBookingModal: React.FC<AppointmentBookingModalProps> = (
                     Select Available Time Slot
                   </label>
                   <div className="d-flex flex-wrap gap-2">
-                    {(doctor.available_time_slots || ['09:30 AM', '10:30 AM', '04:00 PM', '05:30 PM']).map(
+                    {(selectedDoctor?.available_time_slots || ['09:30 AM', '10:30 AM', '04:00 PM', '05:30 PM']).map(
                       (slot: string) => {
                         const isSelected = selectedTime === slot;
                         return (

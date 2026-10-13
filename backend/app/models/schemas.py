@@ -217,7 +217,7 @@ class AppointmentCreate(BaseModel):
     hospital_id: str
     hospital_name: str
     doctor_id: str
-    doctor_name: str
+    doctor_name: Optional[str] = None
     appointment_date: str  # YYYY-MM-DD
     appointment_time: str  # e.g. "10:30 AM"
     intake: SymptomIntakeCreate
@@ -238,6 +238,7 @@ class AppointmentOut(BaseModel):
     appointment_date: str
     appointment_time: str
     status: str
+    consultation_fee_inr: Optional[int] = 250
     created_at: str
     intake_submitted: bool = True
     ai_summary_available: bool = False

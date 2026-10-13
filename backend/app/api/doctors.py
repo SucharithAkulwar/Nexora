@@ -23,6 +23,18 @@ async def list_doctors(
 
     cursor = db["doctor_profiles"].find(query)
     docs = await cursor.to_list(length=100)
+
+    # If specific hospital requested but has no specialized doctors registered yet,
+    # provide the registered Attending OPD Consultant as duty physician
+    if hospital_id and len(docs) == 0 and not specialty:
+        attending = await db["doctor_profiles"].find_one({
+            "$or": [{"user_id": "attending-consultant"}, {"_id": "profile-attending-consultant"}]
+        })
+        if attending:
+            duty_doc = dict(attending)
+            duty_doc["hospital_id"] = hospital_id
+            docs = [duty_doc]
+
     return docs
 
 

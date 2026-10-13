@@ -69,6 +69,15 @@ async def get_hospital_details(hospital_id: str):
     cursor = db["doctor_profiles"].find({"hospital_id": hospital_id})
     doctors = await cursor.to_list(length=20)
 
+    if len(doctors) == 0:
+        attending = await db["doctor_profiles"].find_one({
+            "$or": [{"user_id": "attending-consultant"}, {"_id": "profile-attending-consultant"}]
+        })
+        if attending:
+            duty_doc = dict(attending)
+            duty_doc["hospital_id"] = hospital_id
+            doctors = [duty_doc]
+
     details["has_nexora_doctors"] = len(doctors) > 0
     details["bookable_doctors_count"] = len(doctors)
     details["participating_doctors"] = doctors
